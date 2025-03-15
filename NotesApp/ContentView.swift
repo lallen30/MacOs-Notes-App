@@ -2,6 +2,8 @@ import SwiftUI
 import CoreData
 import Combine
 
+// No need for special imports
+
 // ContentView.swift contains all necessary views for the app
 
 struct ContentView: View {
@@ -34,6 +36,24 @@ struct ContentView: View {
     @State private var showingCreateCategorySheet = false
     @State private var showingEditCategorySheet = false
     @State private var showingCreateSubcategorySheet = false
+    @State private var showingEditSubcategorySheet = false
+    @State private var selectedSubcategoryForEdit: SubCategory?
+    @State private var subcategoryEditName = ""
+    @State private var selectedSubcategoryColorIndex: Int = 0
+    
+    // Define standard colors directly - same as category edit
+    private var colorOptions: [(name: String, color: Color, hex: String)] {
+        return [
+            ("Blue", .blue, "007AFF"),
+            ("Red", .red, "FF0000"),
+            ("Green", .green, "00FF00"),
+            ("Orange", .orange, "FFA500"),
+            ("Purple", .purple, "800080"),
+            ("Pink", .pink, "FFC0CB"),
+            ("Yellow", .yellow, "FFFF00"),
+            ("Gray", .gray, "808080")
+        ]
+    }
     @State private var searchText = ""
     @State private var sortField = "updatedAt"
     @State private var sortAscending = false
@@ -293,6 +313,26 @@ struct ContentView: View {
                                                     Text(subcategory.name ?? "Unnamed")
                                                         .font(.headline)
                                                         .foregroundColor(.primary)
+                                                        .onTapGesture {
+                                                            selectedSubcategoryForEdit = subcategory
+                                                            subcategoryEditName = subcategory.name ?? ""
+                                                            
+                                                            // Find the matching color index
+                                                            let colorHex = subcategory.colorHex ?? "007AFF"
+                                                            let cleanHex = colorHex.replacingOccurrences(of: "#", with: "").uppercased()
+                                                            
+                                                            // Find matching color in our options
+                                                            var index = 0 // Default to blue
+                                                            for (i, option) in colorOptions.enumerated() {
+                                                                if option.hex.uppercased() == cleanHex {
+                                                                    index = i
+                                                                    break
+                                                                }
+                                                            }
+                                                            
+                                                            selectedSubcategoryColorIndex = index
+                                                            showingEditSubcategorySheet = true
+                                                        }
                                                     Spacer()
                                                     
                                                     Button(action: {
@@ -654,6 +694,117 @@ struct ContentView: View {
             if let category = selectedCategory {
                 CreateSubcategorySheet(parentCategory: category)
             }
+        }
+        .sheet(isPresented: $showingEditSubcategorySheet, onDismiss: {
+            refreshNotesList = UUID()
+        }) {
+            VStack(spacing: 20) {
+                // Title
+                Text("Edit Subcategory")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 10)
+                    .padding(.horizontal)
+                
+                // Name field
+                HStack {
+                    Text("Name")
+                        .frame(width: 60, alignment: .leading)
+                    TextField("", text: $subcategoryEditName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                .padding(.horizontal)
+                
+                // Color section
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Color")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // Color grid - 4x2 layout
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 20) {
+                        ForEach(0..<colorOptions.count, id: \.self) { index in
+                            Circle()
+                                .fill(colorOptions[index].color)
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white, lineWidth: selectedSubcategoryColorIndex == index ? 2 : 0)
+                                )
+                                .onTapGesture {
+                                    selectedSubcategoryColorIndex = index
+                                }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                // Buttons
+                HStack {
+                    Button(action: {
+                        // Delete subcategory
+                        if let subcategory = selectedSubcategoryForEdit {
+                            viewContext.delete(subcategory)
+                            do {
+                                try viewContext.save()
+                                showingEditSubcategorySheet = false
+                            } catch {
+                                print("Error deleting subcategory: \(error)")
+                            }
+                        }
+                    }) {
+                        Text("Delete")
+                            .frame(width: 80)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        showingEditSubcategorySheet = false
+                    }) {
+                        Text("Cancel")
+                            .frame(width: 80)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.bordered)
+                    .keyboardShortcut(.escape, modifiers: [])
+                    
+                    Button(action: {
+                        if let subcategory = selectedSubcategoryForEdit, !subcategoryEditName.isEmpty {
+                            // Update subcategory
+                            subcategory.name = subcategoryEditName
+                            
+                            // Get selected color hex from the options array
+                            let colorHex = colorOptions[selectedSubcategoryColorIndex].hex
+                            subcategory.colorHex = colorHex
+                            subcategory.updatedAt = Date()
+                            
+                            // Save changes
+                            do {
+                                try viewContext.save()
+                                showingEditSubcategorySheet = false
+                            } catch {
+                                print("Error saving subcategory: \(error)")
+                            }
+                        }
+                    }) {
+                        Text("Save")
+                            .frame(width: 80)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.bordered)
+                    .keyboardShortcut(.return, modifiers: [])
+                    .disabled(subcategoryEditName.isEmpty)
+                }
+                .padding()
+            }
+            .frame(width: 400, height: 350)
+            .background(Color(.darkGray).opacity(0.2))
+            .cornerRadius(10)
         }
     }
     
@@ -1247,6 +1398,10 @@ struct CreateSubcategorySheet: View {
         }
     }
 }
+
+
+
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

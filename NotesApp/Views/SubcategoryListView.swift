@@ -5,6 +5,8 @@ struct SubcategoryListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Binding var selectedNote: Note?
     @Binding var selectedSubcategory: SubCategory?
+    @Binding var selectedSubcategoryIDForEdit: NSManagedObjectID?
+    @Binding var showingEditSubcategorySheet: Bool
     
     let category: Category
     let sortField: String
@@ -26,6 +28,8 @@ struct SubcategoryListView: View {
                         subcategory: subcategory,
                         selectedNote: $selectedNote,
                         selectedSubcategory: $selectedSubcategory,
+                        selectedSubcategoryIDForEdit: $selectedSubcategoryIDForEdit,
+                        showingEditSubcategorySheet: $showingEditSubcategorySheet,
                         sortField: sortField,
                         sortAscending: sortAscending
                     )
@@ -52,6 +56,8 @@ struct SubcategoryItemView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Binding var selectedNote: Note?
     @Binding var selectedSubcategory: SubCategory?
+    @Binding var selectedSubcategoryIDForEdit: NSManagedObjectID?
+    @Binding var showingEditSubcategorySheet: Bool
     
     let subcategory: SubCategory
     let sortField: String
@@ -63,9 +69,18 @@ struct SubcategoryItemView: View {
                 Circle()
                     .fill(getColorFromHex(subcategory.colorHex ?? "007AFF"))
                     .frame(width: 10, height: 10)
+                
                 Text("\\(subcategory.name ?? "Unnamed")")
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // Open edit sheet when clicking on the subcategory title
+                        selectedSubcategoryIDForEdit = subcategory.objectID
+                        showingEditSubcategorySheet = true
+                    }
+                    .help("Click to edit this subcategory")
+                
                 Spacer()
                 
                 Button(action: {
