@@ -102,24 +102,30 @@ struct NoteRowView: View {
     @ObservedObject var note: Note
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(note.title ?? "Untitled")
-                .font(.headline)
-                .lineLimit(1)
+        HStack(alignment: .top, spacing: 0) {
+            // Left margin
+            Spacer().frame(width: 16)
             
-            Text(note.content ?? "")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-            
-            HStack {
-                Text(formattedDate(note.updatedAt))
-                    .font(.caption)
+            // Note content
+            VStack(alignment: .leading, spacing: 4) {
+                Text(note.title ?? "Untitled")
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                Text(note.content ?? "")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
                 
-                Spacer()
-                
-                // Category display has been removed as requested
+                HStack {
+                    Text(formattedDate(note.updatedAt))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    // Category display has been removed as requested
+                }
             }
         }
         .padding(.vertical, 4)

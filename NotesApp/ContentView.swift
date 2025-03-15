@@ -2,6 +2,8 @@ import SwiftUI
 import CoreData
 import Combine
 
+// ContentView.swift contains all necessary views for the app
+
 struct ContentView: View {
     // Helper function to convert hex to Color
     private func getColorFromHex(_ hex: String) -> Color {
@@ -26,15 +28,33 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedNote: Note?
     @State private var selectedCategory: Category?
+    @State private var selectedSubcategory: SubCategory?
     @State private var showingCreateSheet = false
     @State private var showingEditSheet = false
     @State private var showingCreateCategorySheet = false
     @State private var showingEditCategorySheet = false
+    @State private var showingCreateSubcategorySheet = false
     @State private var searchText = ""
     @State private var sortField = "updatedAt"
     @State private var sortAscending = false
     @State private var refreshCategoryList = false
+    @State private var refreshNotesList = UUID() // Add a trigger for refreshing notes list
     @State private var showUnlistedCategory = false
+    
+    // Setup notification observers for note changes
+    private func setupNotificationObservers() {
+        // Listen for note changes
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("NoteDeleted"), object: nil, queue: .main) { _ in
+            // Refresh the notes list when a note is deleted
+            self.refreshNotesList = UUID()
+        }
+        
+        // Listen for Core Data changes
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSManagedObjectContextObjectsDidChange, object: viewContext, queue: .main) { _ in
+            // Refresh the notes list when Core Data changes
+            self.refreshNotesList = UUID()
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -71,17 +91,13 @@ struct ContentView: View {
                                 Text(category.name ?? "Unnamed")
                                     .font(.headline)
                                 
-                                Button(action: {
-                                    showingEditCategorySheet = true
-                                }) {
-                                    Image(systemName: "pencil")
-                                        .font(.caption)
-                                }
-                                .buttonStyle(BorderlessButtonStyle())
-                                .help("Edit category")
-                                
                                 Spacer()
                             }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                showingEditCategorySheet = true
+                            }
+                            .help("Click to edit this category")
                         } else if showUnlistedCategory {
                             HStack {
                                 Circle()
@@ -151,17 +167,265 @@ struct ContentView: View {
                     .padding(.vertical, 8)
                     
                     // Notes list - filtered by selected category or unlisted
-                    NoteListView(
-                        predicate: createNotePredicate(),
-                        sortDescriptors: [createSortDescriptor()],
-                        selectedNote: $selectedNote
-                    )
+                    VStack {
+                        if let category = selectedCategory, selectedSubcategory == nil, !showUnlistedCategory {
+                            // Hierarchical view for category with subcategories
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    // Section for notes directly in the category
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Spacer().frame(width: 8) // Add left padding to Notes header
+                                            Text("Notes")
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 2)
+                                        
+                                        // Notes directly assigned to this category - Direct implementation
+                                        VStack {
+                                            // This is just to force a refresh when refreshNotesList changes
+                                            // Force view refresh when UUID changes
+                                            Text("").frame(width: 0, height: 0).id(refreshNotesList)
+                                            
+                                            // Fetch notes for this category
+                                            let directNotes = Note.fetchNotesInCategory(category, context: viewContext).filter { $0.subcategory == nil }
+                                            
+                                            // Display notes directly - Completely revised implementation
+                                            VStack(alignment: .leading, spacing: 0) {
+                                                if directNotes.isEmpty {
+                                                    Text("No notes in this category")
+                                                        .font(.caption)
+                                                        .foregroundColor(.secondary)
+                                                        .padding(.vertical, 0)
+                                                } else {
+                                                    
+                                                    ForEach(directNotes, id: \.id) { note in
+                                                        HStack {
+                                                            Spacer().frame(width: 16)
+                                                            Button(action: {
+                                                            selectedNote = note
+                                                            print("Selected note: \(note.title ?? "Untitled")")
+                                                        }) {
+                                                            HStack(alignment: .top) {
+                                                                Spacer().frame(width: 6) // Add a few pixels of inside padding
+                                                                VStack(alignment: .leading, spacing: 0) {
+                                                                    Text(note.title ?? "Untitled")
+                                                                        .font(.headline)
+                                                                        .foregroundColor(.primary)
+                                                                        .lineLimit(1)
+                                                                    
+                                                                    if let content = note.content, !content.isEmpty {
+                                                                        Text(content)
+                                                                            .font(.subheadline)
+                                                                            .foregroundColor(.secondary)
+                                                                            .lineLimit(2)
+                                                                    }
+                                                                }
+                                                                Spacer()
+                                                            }
+                                                            .padding(.vertical, 1) // Reduced padding
+                                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                                            .background(selectedNote?.id == note.id ? Color.accentColor.opacity(0.2) : Color(NSColor.windowBackgroundColor))
+                                                            .cornerRadius(4)
+                                                            .overlay(
+                                                                RoundedRectangle(cornerRadius: 4)
+                                                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                            )
+                                                        }
+                                                        .buttonStyle(PlainButtonStyle())
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            .frame(minHeight: 0)
+                                        }
+                                    }
+                                    
+                                    // Subcategory section header
+                                    HStack {
+                                        Spacer().frame(width: 8) // Add left padding to Subcategories header
+                                        Text("Subcategories")
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            showingCreateSubcategorySheet = true
+                                        }) {
+                                            Label("Add Subcategory", systemImage: "plus")
+                                                .font(.caption)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                    .padding(.horizontal, 1)
+                                    .padding(.top, 0)
+                                    
+                                    // Fetch subcategories directly
+                                    let subcategories = fetchSubcategoriesForCategory(category)
+                                    
+                                    // Also try to get subcategories directly from the relationship
+                                    let directSubcategories = category.subcategories as? Set<SubCategory> ?? []
+                                    
+                                    if subcategories.isEmpty && directSubcategories.isEmpty {
+                                        HStack {
+                                            Spacer().frame(width: 20) // Added left spacing
+                                            Text("No subcategories found")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 2)
+                                        .padding(.top, 0)
+                                    } else {
+                                        // Try both sources of subcategories
+                                        let combinedSubcategories = subcategories.isEmpty ? Array(directSubcategories) : subcategories
+                                        ForEach(combinedSubcategories, id: \.self) { subcategory in
+                                            VStack(alignment: .leading, spacing: 0) {
+                                                HStack {
+                                                    // Left margin for subcategory titles
+                                                    Spacer().frame(width: 16)
+                                                    
+                                                    Circle()
+                                                        .fill(getColorFromHex(subcategory.colorHex ?? "007AFF"))
+                                                        .frame(width: 10, height: 10)
+                                                    Text(subcategory.name ?? "Unnamed")
+                                                        .font(.headline)
+                                                        .foregroundColor(.primary)
+                                                    Spacer()
+                                                    
+                                                    Button(action: {
+                                                        selectedSubcategory = subcategory
+                                                    }) {
+                                                        Text("View All")
+                                                            .font(.caption)
+                                                    }
+                                                    .buttonStyle(.plain)
+                                                    .opacity(countNotesInSubcategory(subcategory) > 0 ? 1.0 : 0.0)
+                                                }
+                                                .padding(.horizontal, 2)
+                                                .padding(.bottom, 2) // Add padding below subcategory
+                                                
+                                                // Notes for this subcategory - Direct implementation
+                                                VStack {
+                                                    // This is just to force a refresh when refreshNotesList changes
+                                                    // Force view refresh when UUID changes
+                                                    Text("").frame(width: 0, height: 0).id(refreshNotesList)
+                                                    
+                                                    // Fetch notes for this subcategory
+                                                    let subcategoryNotes = Note.fetchNotesInSubCategory(subcategory, context: viewContext)
+                                                    
+                                                    // Display notes directly - Completely revised implementation
+                                                    VStack(alignment: .leading, spacing: 1) {
+                                                        if subcategoryNotes.isEmpty {
+                                                            HStack {
+                                                                Spacer().frame(width: 20) // Added left spacing
+                                                                Text("No notes in this subcategory")
+                                                                    .font(.caption)
+                                                                    .foregroundColor(.secondary)
+                                                                Spacer()
+                                                            }
+                                                            .padding(.vertical, 0)
+                                                        } else {
+                                                            
+                                                            ForEach(subcategoryNotes, id: \.id) { note in
+                                                                Button(action: {
+                                                                    selectedNote = note
+                                                                    print("Selected note: \(note.title ?? "Untitled")")
+                                                                }) {
+                                                                    HStack(spacing: 0) {
+                                                                        // Left margin outside the note background
+                                                                        Spacer().frame(width: 20)
+                                                                        
+                                                                        // Note content with background
+                                                                        HStack(alignment: .top) {
+                                                                            VStack(alignment: .leading, spacing: 0) {
+                                                                                Text(note.title ?? "Untitled")
+                                                                                    .font(.headline)
+                                                                                    .foregroundColor(.primary)
+                                                                                    .lineLimit(1)
+                                                                                
+                                                                                if let content = note.content, !content.isEmpty {
+                                                                                    Text(content)
+                                                                                        .font(.subheadline)
+                                                                                        .foregroundColor(.secondary)
+                                                                                        .lineLimit(2)
+                                                                                }
+                                                                            }
+                                                                            .padding(.leading, 4) // Add a few pixels of padding inside
+                                                                            Spacer()
+                                                                        }
+                                                                        .padding(.vertical, 4) // Increased vertical padding
+                                                                        .padding(.horizontal, 2) // Add horizontal padding
+                                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                                                        .background(selectedNote?.id == note.id ? Color.accentColor.opacity(0.2) : Color(NSColor.windowBackgroundColor))
+                                                                        .cornerRadius(4)
+                                                                        .overlay(
+                                                                            RoundedRectangle(cornerRadius: 4)
+                                                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                                        )
+                                                                    }
+                                                                }
+                                                                .buttonStyle(PlainButtonStyle())
+                                                            }
+                                                        }
+                                                    }
+                                                    .frame(minHeight: 0)
+                                                }
+                                            }
+                                            .padding(.top, 0)
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 0)
+                            }
+                        } else {
+                            // Display subcategory header if a subcategory is selected
+                            if let subcategory = selectedSubcategory {
+                                // Subcategory header with back button
+                                HStack(spacing: 4) {
+                                    // Back button to parent category
+                                    if let parentCategory = subcategory.parentCategory {
+                                        Button(action: {
+                                            // Go back to parent category view
+                                            selectedSubcategory = nil
+                                            selectedCategory = parentCategory
+                                        }) {
+                                            Image(systemName: "chevron.left")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                    
+                                    // Subcategory circle and title
+                                    Circle()
+                                        .fill(getColorFromHex(subcategory.colorHex ?? "007AFF"))
+                                        .frame(width: 12, height: 12)
+                                    Text("\(subcategory.name ?? "Unnamed")") 
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 2)
+                                .padding(.bottom, 2)
+                            }
+                            
+                            // Standard note list for subcategory or unlisted views
+                            NoteListView(
+                                predicate: createNotePredicate(),
+                                sortDescriptors: [createSortDescriptor()],
+                                selectedNote: $selectedNote
+                            )
+                        }
+                    }
                 }
             } else {
                 // Categories list
                 VStack {
                     HStack {
-                        Text("Categories")
+                        Text("Categories Content")
                             .font(.headline)
                         
                         Spacer()
@@ -204,28 +468,108 @@ struct ContentView: View {
                         }
                         .background(showUnlistedCategory ? Color.accentColor.opacity(0.1) : Color.clear)
                         
-                        // Regular categories
+                        // Regular categories with subcategories
                         ForEach(fetchCategories(), id: \.self) { category in
-                            HStack {
-                                Circle()
-                                    .fill(getColorFromHex(category.colorHex ?? "007AFF")) // Convert hex to Color
-                                    .frame(width: 12, height: 12)
+                            // Custom DisclosureGroup with separate clickable areas
+                            DisclosureGroup {
+                                // Subcategories
+                                if let subcategories = category.subcategories as? Set<SubCategory>, !subcategories.isEmpty {
+                                    ForEach(Array(subcategories).sorted(by: { ($0.name ?? "") < ($1.name ?? "") }), id: \.self) { subcategory in
+                                        HStack {
+                                            Circle()
+                                                .fill(getColorFromHex(subcategory.colorHex ?? "007AFF"))
+                                                .frame(width: 10, height: 10)
+                                            
+                                            Text(subcategory.name ?? "Unnamed")
+                                                .lineLimit(1)
+                                                .font(.system(size: 13))
+                                            
+                                            Spacer()
+                                            
+                                            // Count notes in this subcategory
+                                            Text("\(countNotesInSubcategory(subcategory))")
+                                                .foregroundColor(.secondary)
+                                                .font(.caption)
+                                        }
+                                        .padding(.leading, 10)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            selectedCategory = category
+                                            selectedSubcategory = subcategory
+                                            showUnlistedCategory = false
+                                        }
+                                        .background(selectedSubcategory == subcategory ? Color.accentColor.opacity(0.1) : Color.clear)
+                                    }
+                                }
                                 
-                                Text(category.name ?? "Unnamed")
-                                    .lineLimit(1)
-                                
-                                Spacer()
-                                
-                                Text("\(category.notes?.count ?? 0)")
-                                    .foregroundColor(.secondary)
-                                    .font(.caption)
+                                // Add subcategory button
+                                Button(action: {
+                                    selectedCategory = category
+                                    showingCreateSubcategorySheet = true
+                                }) {
+                                    Label("Add Subcategory", systemImage: "plus")
+                                        .font(.caption)
+                                }
+                                .padding(.leading, 10)
+                                .buttonStyle(.plain)
+                            } label: {
+                                HStack {
+                                    // Make the circle and title clickable for selection or editing
+                                    HStack(spacing: 4) {
+                                        Circle()
+                                            .fill(getColorFromHex(category.colorHex ?? "007AFF"))
+                                            .frame(width: 12, height: 12)
+                                        
+                                        Text(category.name ?? "Unnamed")
+                                            .lineLimit(1)
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        // If we're already on this category's screen, clicking opens edit sheet
+                                        if selectedCategory == category && selectedSubcategory == nil && !showUnlistedCategory {
+                                            showingEditCategorySheet = true
+                                        } else {
+                                            // Otherwise, just select the category
+                                            selectedCategory = category
+                                            selectedSubcategory = nil
+                                            showUnlistedCategory = false
+                                        }
+                                    }
+                                    .help(selectedCategory == category && selectedSubcategory == nil && !showUnlistedCategory ? 
+                                          "Click to edit this category" : 
+                                          "Click to select this category")
+                                    
+                                    Spacer()
+                                    
+                                    // Count only notes directly assigned to this category (not in subcategories)
+                                    Text("\(countNotesInCategory(category))")
+                                        .foregroundColor(.secondary)
+                                        .font(.caption)
+                                        // Make the count area clickable for selection
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            // Clicking on the count selects the category
+                                            selectedCategory = category
+                                            selectedSubcategory = nil
+                                            showUnlistedCategory = false
+                                        }
+                                }
+                                .background(selectedCategory == category && selectedSubcategory == nil && !showUnlistedCategory ? Color.accentColor.opacity(0.1) : Color.clear)
+                                .contextMenu {
+                                    // Only show edit option if we're on this category's screen
+                                    if selectedCategory == category && selectedSubcategory == nil && !showUnlistedCategory {
+                                        Button("Edit Category") {
+                                            showingEditCategorySheet = true
+                                        }
+                                    } else {
+                                        Button("Select Category") {
+                                            selectedCategory = category
+                                            selectedSubcategory = nil
+                                            showUnlistedCategory = false
+                                        }
+                                    }
+                                }
                             }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedCategory = category
-                                showUnlistedCategory = false
-                            }
-                            .background(selectedCategory == category && !showUnlistedCategory ? Color.accentColor.opacity(0.1) : Color.clear)
                         }
                         .onDelete(perform: deleteCategories)
                     }
@@ -235,15 +579,54 @@ struct ContentView: View {
             
             // Right side - Note detail view
             if selectedNote != nil {
-                NoteDetailView(note: selectedNote!)
+                HStack(alignment: .top, spacing: 0) {
+                    // Left margin spacer
+                    Spacer().frame(width: 16)
+                    
+                    // Note detail view
+                    NoteDetailView(note: selectedNote!)
+                }
             } else {
-                Text("Select a note to view details")
-                    .font(.title)
-                    .foregroundColor(.secondary)
+                VStack {
+                    if let category = selectedCategory {
+                        if let subcategory = selectedSubcategory {
+                            Text("Select a note from \(subcategory.name ?? "Unnamed") subcategory")
+                                .font(.title2)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Select a note from \(category.name ?? "Unnamed") category")
+                                .font(.title2)
+                                .foregroundColor(.secondary)
+                        }
+                    } else if showUnlistedCategory {
+                        Text("Select a note from Unlisted category")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Select a note to view details")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .frame(minWidth: 900, minHeight: 600)
-        .navigationTitle("Notes")
+        .onAppear {
+            setupNotificationObservers()
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Spacer().frame(width: 8) // Reduced left padding by half
+                    Text("Notes")
+                        .font(.title2) // Using title2 to match macOS standard title size
+                        .fontWeight(.semibold) // Adding semibold weight for better visibility
+                        .foregroundColor(.primary)
+                    Spacer() // Push the title to the left
+                }
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("CreateNewNote"))) { _ in
             showingCreateSheet = true
         }
@@ -264,6 +647,14 @@ struct ContentView: View {
                 EditCategorySheet(category: category)
             }
         }
+        .sheet(isPresented: $showingCreateSubcategorySheet, onDismiss: {
+            // Refresh the category list when the sheet is dismissed
+            refreshCategoryList.toggle()
+        }) {
+            if let category = selectedCategory {
+                CreateSubcategorySheet(parentCategory: category)
+            }
+        }
     }
     
     // MARK: - Category Management Functions
@@ -280,6 +671,37 @@ struct ContentView: View {
         }
     }
     
+    private func fetchSubcategoriesForCategory(_ category: Category) -> [SubCategory] {
+        let request = NSFetchRequest<SubCategory>(entityName: "SubCategory")
+        request.predicate = NSPredicate(format: "parentCategory == %@", category)
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \SubCategory.name, ascending: true)]
+        
+        print("DEBUG: Fetching subcategories for category ID: \(category.id?.uuidString ?? "nil"), name: \(category.name ?? "unnamed")")
+        
+        // Debug function to check all notes in the database
+        printAllNotes()
+        
+        do {
+            let results = try viewContext.fetch(request)
+            print("DEBUG: Found \(results.count) subcategories")
+            
+            // Log each subcategory for debugging
+            for (index, subcategory) in results.enumerated() {
+                print("DEBUG: Subcategory \(index+1): \(subcategory.name ?? "unnamed") (ID: \(subcategory.id?.uuidString ?? "nil"))")
+            }
+            
+            // Also check if there are any subcategories in Core Data at all
+            let allRequest = NSFetchRequest<SubCategory>(entityName: "SubCategory")
+            let allSubcategories = try viewContext.fetch(allRequest)
+            print("DEBUG: Total subcategories in database: \(allSubcategories.count)")
+            
+            return results
+        } catch {
+            print("ERROR: Error fetching subcategories: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
     private func countUnlistedNotes() -> Int {
         let request = NSFetchRequest<Note>(entityName: "Note")
         request.predicate = NSPredicate(format: "category == nil")
@@ -289,6 +711,58 @@ struct ContentView: View {
         } catch {
             print("Error counting unlisted notes: \(error.localizedDescription)")
             return 0
+        }
+    }
+    
+    private func countNotesInCategory(_ category: Category) -> Int {
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        request.predicate = NSPredicate(format: "category == %@ AND subcategory == nil", category)
+        
+        do {
+            return try viewContext.count(for: request)
+        } catch {
+            print("Error counting notes in category: \(error.localizedDescription)")
+            return 0
+        }
+    }
+    
+    private func countNotesInSubcategory(_ subcategory: SubCategory) -> Int {
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        request.predicate = NSPredicate(format: "subcategory == %@", subcategory)
+        
+        do {
+            return try viewContext.count(for: request)
+        } catch {
+            print("Error counting notes in subcategory: \(error.localizedDescription)")
+            return 0
+        }
+    }
+    
+    // Debug function to print all notes in the database
+    private func printAllNotes() {
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        
+        do {
+            let allNotes = try viewContext.fetch(request)
+            print("\n==== DEBUG: ALL NOTES IN DATABASE (\(allNotes.count) total) ====\n")
+            
+            if allNotes.isEmpty {
+                print("No notes found in the database!")
+            } else {
+                for (index, note) in allNotes.enumerated() {
+                    print("Note \(index+1): \(note.title ?? "Untitled")")
+                    print("  - ID: \(note.id?.uuidString ?? "nil")")
+                    print("  - Content: \(note.content?.prefix(30) ?? "")...")
+                    print("  - Category: \(note.category?.name ?? "nil")")
+                    print("  - Subcategory: \(note.subcategory?.name ?? "nil")")
+                    print("  - Created: \(note.createdAt?.description ?? "nil")")
+                    print("")
+                }
+            }
+            
+            print("==== END DEBUG NOTES ====\n")
+        } catch {
+            print("Error fetching all notes: \(error)")
         }
     }
     
@@ -308,9 +782,13 @@ struct ContentView: View {
     private func createNotePredicate() -> NSPredicate? {
         var predicates: [NSPredicate] = []
         
-        // Category filter
-        if let category = selectedCategory {
-            predicates.append(NSPredicate(format: "category == %@", category))
+        // Category and subcategory filter
+        if let subcategory = selectedSubcategory {
+            // Filter by subcategory
+            predicates.append(NSPredicate(format: "subcategory == %@", subcategory))
+        } else if let category = selectedCategory {
+            // Filter by category (but not in any subcategory)
+            predicates.append(NSPredicate(format: "category == %@ AND (subcategory == nil)", category))
         } else if showUnlistedCategory {
             predicates.append(NSPredicate(format: "category == nil"))
         }
@@ -361,6 +839,7 @@ struct EditCategorySheet: View {
     @State private var selectedColorIndex: Int = 0
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var showingDeleteAlert = false
     
     // Define standard colors directly
     private var colorOptions: [(name: String, color: Color, hex: String)] {
@@ -439,12 +918,19 @@ struct EditCategorySheet: View {
             }
             
             HStack {
+                // Delete button on the left
+                Button("Delete") {
+                    showingDeleteAlert = true
+                }
+                .foregroundColor(.red)
+                .keyboardShortcut(.delete, modifiers: [])
+                
+                Spacer()
+                
                 Button("Cancel") {
                     presentationMode.wrappedValue.dismiss()
                 }
                 .keyboardShortcut(.escape, modifiers: [])
-                
-                Spacer()
                 
                 Button("Save") {
                     updateCategory()
@@ -524,7 +1010,7 @@ struct CreateCategorySheet: View {
                     TextField("Name", text: $name)
                         .padding(.vertical, 4)
                     
-                    ColorPicker("Color", selection: $selectedColor)
+                    Text("Color")
                         .padding(.vertical, 4)
                     
                     // Color presets
@@ -609,6 +1095,156 @@ struct CreateCategorySheet: View {
         
         // Dismiss the sheet
         presentationMode.wrappedValue.dismiss()
+    }
+}
+
+// MARK: - Create Subcategory Sheet
+struct CreateSubcategorySheet: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.presentationMode) private var presentationMode
+    
+    let parentCategory: Category
+    
+    @State private var name: String = ""
+    @State private var selectedColorIndex: Int = 0
+    @State private var inheritParentColor: Bool = true
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+    
+    // Define standard colors directly
+    private var colorOptions: [(name: String, color: Color, hex: String)] {
+        return [
+            ("Blue", .blue, "007AFF"),
+            ("Red", .red, "FF0000"),
+            ("Green", .green, "00FF00"),
+            ("Orange", .orange, "FFA500"),
+            ("Purple", .purple, "800080"),
+            ("Pink", .pink, "FFC0CB"),
+            ("Yellow", .yellow, "FFFF00"),
+            ("Gray", .gray, "808080")
+        ]
+    }
+    
+    // Helper function to convert hex to Color (duplicated from ContentView)
+    private func getColorFromHex(_ hex: String) -> Color {
+        // Remove # if present and convert to uppercase for consistent comparison
+        let cleanHex = hex.replacingOccurrences(of: "#", with: "").uppercased()
+        
+        // Direct mapping to SwiftUI system colors
+        switch cleanHex {
+        case "007AFF": return .blue
+        case "FF0000": return .red
+        case "00FF00": return .green
+        case "FFA500": return .orange
+        case "800080": return .purple
+        case "FFC0CB": return .pink
+        case "FFFF00": return .yellow
+        case "808080": return .gray
+        default:
+            // For any other hex values, use blue as fallback
+            return .blue
+        }
+    }
+    
+    var body: some View {
+        VStack {
+            Form {
+                Section(header: Text("Subcategory Details")) {
+                    TextField("Name", text: $name)
+                        .padding(.vertical, 4)
+                    
+                    Toggle("Use parent category color", isOn: $inheritParentColor)
+                        .padding(.vertical, 4)
+                    
+                    if !inheritParentColor {
+                        Text("Color")
+                            .foregroundColor(.secondary)
+                            .padding(.top, 8)
+                        
+                        // Color presets
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
+                            ForEach(0..<colorOptions.count, id: \.self) { index in
+                                Circle()
+                                    .fill(colorOptions[index].color)
+                                    .frame(width: 30, height: 30)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.primary, lineWidth: selectedColorIndex == index ? 2 : 0)
+                                    )
+                                    .onTapGesture {
+                                        selectedColorIndex = index
+                                    }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                
+                Section(header: Text("Parent Category")) {
+                    HStack {
+                        Circle()
+                            .fill(getColorFromHex(parentCategory.colorHex ?? "007AFF"))
+                            .frame(width: 12, height: 12)
+                        Text(parentCategory.name ?? "Unnamed")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            
+            HStack {
+                Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                }
+                .keyboardShortcut(.escape, modifiers: [])
+                
+                Spacer()
+                
+                Button("Save") {
+                    saveSubcategory()
+                }
+                .keyboardShortcut(.return, modifiers: [])
+                .disabled(name.isEmpty)
+            }
+            .padding()
+        }
+        .frame(width: 400, height: 350)
+        .alert(isPresented: $showingAlert) {
+            Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
+    }
+    
+    private func saveSubcategory() {
+        if name.isEmpty {
+            alertMessage = "Please enter a name for your subcategory."
+            showingAlert = true
+            return
+        }
+        
+        var colorHex: String? = nil
+        
+        if !inheritParentColor {
+            // Get the selected color information
+            let selectedColor = colorOptions[selectedColorIndex]
+            colorHex = selectedColor.hex
+        }
+        
+        // Create the subcategory directly instead of using the extension method
+        let subcategory = SubCategory(context: viewContext)
+        subcategory.id = UUID()
+        subcategory.name = name
+        subcategory.colorHex = colorHex ?? parentCategory.colorHex // Inherit parent color if not specified
+        subcategory.parentCategory = parentCategory
+        subcategory.createdAt = Date()
+        subcategory.updatedAt = Date()
+        
+        do {
+            try viewContext.save()
+            // Dismiss the sheet
+            presentationMode.wrappedValue.dismiss()
+        } catch {
+            alertMessage = "Error creating subcategory: \(error.localizedDescription)"
+            showingAlert = true
+        }
     }
 }
 

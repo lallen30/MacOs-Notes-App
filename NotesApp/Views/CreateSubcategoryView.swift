@@ -1,6 +1,27 @@
 import SwiftUI
 import CoreData
 
+// Helper function to convert hex to Color
+func getColorFromHex(_ hex: String) -> Color {
+    // Remove # if present and convert to uppercase for consistent comparison
+    let cleanHex = hex.replacingOccurrences(of: "#", with: "").uppercased()
+    
+    // Direct mapping to SwiftUI system colors
+    switch cleanHex {
+    case "007AFF": return .blue
+    case "FF0000", "FF3B30": return .red
+    case "00FF00", "34C759": return .green
+    case "FFA500", "FF9500": return .orange
+    case "800080", "AF52DE": return .purple
+    case "FFC0CB", "FF2D55": return .pink
+    case "FFFF00", "FFCC00": return .yellow
+    case "808080", "8E8E93": return .gray
+    default:
+        // For any other hex values, use blue as fallback
+        return .blue
+    }
+}
+
 struct CreateSubcategoryView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.presentationMode) private var presentationMode
@@ -29,7 +50,7 @@ struct CreateSubcategoryView: View {
                         .padding(.vertical, 4)
                     
                     if !inheritParentColor {
-                        ColorPicker("Color", selection: $selectedColor)
+                        Text("Color")
                             .padding(.vertical, 4)
                         
                         // Color presets
@@ -54,7 +75,7 @@ struct CreateSubcategoryView: View {
                 Section(header: Text("Parent Category")) {
                     HStack {
                         Circle()
-                            .fill(parentCategory.color)
+                            .fill(getColorFromHex(parentCategory.colorHex ?? "007AFF"))
                             .frame(width: 12, height: 12)
                         Text(parentCategory.name ?? "Unnamed")
                             .foregroundColor(.secondary)
@@ -85,8 +106,9 @@ struct CreateSubcategoryView: View {
         }
         .onAppear {
             // Initialize with parent category color
-            if let colorHex = parentCategory.colorHex, let color = try? Color(hex: colorHex) {
-                selectedColor = color
+            if let colorHex = parentCategory.colorHex {
+                // Convert hex to Color using our utility function
+                selectedColor = getColorFromHex(colorHex)
             }
         }
     }
@@ -102,11 +124,18 @@ struct CreateSubcategoryView: View {
         
         if !inheritParentColor {
             // Convert Color to hex string
-            let uiColor = NSColor(selectedColor)
-            colorHex = String(format: "#%02X%02X%02X", 
-                             Int(uiColor.redComponent * 255), 
-                             Int(uiColor.greenComponent * 255), 
-                             Int(uiColor.blueComponent * 255))
+            // For simplicity, we'll use predefined colors with their hex values
+            switch selectedColor {
+            case .blue: colorHex = "#007AFF"
+            case .red: colorHex = "#FF3B30"
+            case .green: colorHex = "#34C759"
+            case .orange: colorHex = "#FF9500"
+            case .purple: colorHex = "#AF52DE"
+            case .pink: colorHex = "#FF2D55"
+            case .yellow: colorHex = "#FFCC00"
+            case .gray: colorHex = "#8E8E93"
+            default: colorHex = "#007AFF" // Default blue
+            }
         }
         
         // Create the subcategory

@@ -80,13 +80,21 @@ struct NoteDetailView: View {
                         .frame(maxWidth: 200)
                         .onChange(of: editedCategory) { newCategory in
                             // Reset subcategory when category changes
-                            if editedSubcategory?.parentCategory != newCategory {
+                            if newCategory == nil {
+                                // If category is set to None, subcategory must also be None
                                 editedSubcategory = nil
+                                availableSubcategories = []
+                            } else if editedSubcategory?.parentCategory != newCategory {
+                                // If new category doesn't match subcategory's parent, reset subcategory
+                                editedSubcategory = nil
+                                updateAvailableSubcategories()
+                            } else {
+                                updateAvailableSubcategories()
                             }
-                            updateAvailableSubcategories()
                         }
                         
-                        if !availableSubcategories.isEmpty {
+                        // Only show subcategory picker if a category is selected
+                        if editedCategory != nil {
                             Picker("Subcategory", selection: $editedSubcategory) {
                                 Text("None").tag(nil as SubCategory?)
                                 ForEach(availableSubcategories, id: \.id) { subcategory in
@@ -95,16 +103,27 @@ struct NoteDetailView: View {
                                 }
                             }
                             .frame(maxWidth: 200)
+                            .disabled(availableSubcategories.isEmpty)
+                            .onChange(of: editedSubcategory) { newSubcategory in
+                                // Print debug info
+                                print("Selected subcategory: \(newSubcategory?.name ?? "None")")
+                            }
                         }
                     }
                     .padding(.horizontal)
                     
                     // Content editor
-                    TextEditor(text: $editedContent)
-                        .font(.body)
-                        .padding()
-                        .background(Color(.textBackgroundColor))
-                        .cornerRadius(4)
+                    HStack {
+                        // Left margin
+                        Spacer().frame(width: 16)
+                        
+                        // Editor
+                        TextEditor(text: $editedContent)
+                            .font(.body)
+                            .padding()
+                            .background(Color(.textBackgroundColor))
+                            .cornerRadius(4)
+                    }
                 }
             } else {
                 VStack(alignment: .leading, spacing: 8) {
@@ -143,12 +162,18 @@ struct NoteDetailView: View {
                     }
                     
                     // Content
-                    ScrollView {
-                        Text(note.content ?? "")
-                            .font(.body)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
+                    HStack {
+                        // Left margin
+                        Spacer().frame(width: 16)
+                        
+                        // Note content
+                        ScrollView {
+                            Text(note.content ?? "")
+                                .font(.body)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                        }
                     }
                 }
             }
@@ -196,7 +221,21 @@ struct NoteDetailView: View {
         
         // Update note with all edited properties
         note.update(title: editedTitle, content: editedContent, category: editedCategory, subcategory: editedSubcategory, context: viewContext)
-        isEditing = false
+        
+        // Explicitly save changes to ensure they're persisted
+        do {
+            try viewContext.save()
+            
+            // Force UI update by explicitly setting the note properties
+            // This ensures SwiftUI detects the changes
+            DispatchQueue.main.async {
+                self.note.objectWillChange.send()
+                isEditing = false
+            }
+        } catch {
+            alertMessage = "Failed to save note: \(error.localizedDescription)"
+            showingAlert = true
+        }
     }
     
     private func updateAvailableSubcategories() {
@@ -208,13 +247,23 @@ struct NoteDetailView: View {
     }
     
     private func deleteNote() {
-        viewContext.delete(note)
+        // Notify observers before deletion
+        note.objectWillChange.send()
         
-        do {
-            try viewContext.save()
-        } catch {
-            alertMessage = "Failed to delete note: \(error.localizedDescription)"
-            showingAlert = true
+        // Use withAnimation to make the deletion visually smooth
+        withAnimation {
+            viewContext.delete(note)
+            
+            do {
+                try viewContext.save()
+                
+                // Post a notification that a note was deleted
+                // This will allow parent views to refresh their state
+                NotificationCenter.default.post(name: NSNotification.Name("NoteDeleted"), object: nil)
+            } catch {
+                alertMessage = "Failed to delete note: \(error.localizedDescription)"
+                showingAlert = true
+            }
         }
     }
     

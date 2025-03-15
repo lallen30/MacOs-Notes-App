@@ -9,31 +9,36 @@ extension Note {
         self.content = content
         self.updatedAt = Date()
         
-        // Update category if provided
-        if let category = category {
+        // Handle the case where category is explicitly set to nil (move to Unlisted)
+        if category == nil {
+            // This means the user explicitly selected "None" for category
+            self.category = nil
+            // When category is nil, subcategory must also be nil
+            self.subcategory = nil
+        } else if let category = category {
+            // Update category if a specific one is provided
             self.category = category
             
-            // If subcategory is provided, ensure it belongs to the selected category
-            if let subcategory = subcategory {
+            // Handle subcategory
+            if subcategory == nil {
+                // User explicitly selected "None" for subcategory
+                self.subcategory = nil
+            } else if let subcategory = subcategory {
+                // User selected a specific subcategory
                 if subcategory.parentCategory == category {
                     self.subcategory = subcategory
                 } else {
-                    self.subcategory = nil // Clear subcategory if it doesn't belong to the new category
+                    // Subcategory doesn't belong to the selected category
+                    self.subcategory = nil
                 }
             }
-        } else if category == nil && self.category == nil {
-            // If no category is provided and note doesn't have a category, set subcategory to nil
-            self.subcategory = nil
         }
         
-        // Update subcategory if provided
-        if let subcategory = subcategory {
+        // If subcategory is provided but category is not explicitly provided,
+        // ensure the note's category matches the subcategory's parent
+        if let subcategory = subcategory, category == nil {
             self.subcategory = subcategory
-            
-            // If the note doesn't have a category, set it to the subcategory's parent
-            if self.category == nil {
-                self.category = subcategory.parentCategory
-            }
+            self.category = subcategory.parentCategory
         }
         
         do {

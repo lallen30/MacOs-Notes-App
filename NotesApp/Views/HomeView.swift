@@ -2,8 +2,7 @@ import SwiftUI
 import CoreData
 import Combine
 
-// Import CategoryTag component and ColorUtility
-@_exported import struct NotesApp.CategoryTag
+// Import CategoryTag component
 
 // MARK: - CategoryStore
 /// Custom ObservableObject to manually manage category data
@@ -157,7 +156,28 @@ class CategoryStore: ObservableObject {
     func getCategoryColor(_ category: Category) -> Color {
         // Simple approach - just use the color directly from the category
         let hex = category.colorHex ?? "007AFF"
-        return CategoryTag.getColorFromHex(hex)
+        return getColorFromHex(hex)
+    }
+    
+    // Helper function to convert hex to Color
+    func getColorFromHex(_ hex: String) -> Color {
+        // Remove # if present and convert to uppercase for consistent comparison
+        let cleanHex = hex.replacingOccurrences(of: "#", with: "").uppercased()
+        
+        // Direct mapping to SwiftUI system colors
+        switch cleanHex {
+        case "007AFF": return .blue
+        case "FF0000": return .red
+        case "00FF00": return .green
+        case "FFA500": return .orange
+        case "800080": return .purple
+        case "FFC0CB": return .pink
+        case "FFFF00": return .yellow
+        case "808080": return .gray
+        default:
+            // For any other hex values, use blue as fallback
+            return .blue
+        }
     }
     
     // Helper method to get the most up-to-date category name directly from Core Data
@@ -291,8 +311,8 @@ public struct HomeView: View {
                                                     // Get the hex value and convert to a color using our utility
                                                     let subHexValue = subcategory.colorHex ?? "007AFF"
                                                     
-                                                    // Use our central color utility
-                                                    let subColor = CategoryTag.getColorFromHex(subHexValue)
+                                                    // Use our local color utility
+                                                    let subColor = categoryStore.getColorFromHex(subHexValue)
                                                     
                                                     Circle()
                                                         .fill(subColor)
@@ -334,7 +354,7 @@ public struct HomeView: View {
                                             // This ensures we're using the actual current value
                                             let colorHex = category.colorHex ?? "007AFF"
                                             Circle()
-                                                .fill(CategoryTag.getColorFromHex(colorHex))
+                                                .fill(categoryStore.getColorFromHex(colorHex))
                                                 .frame(width: 12, height: 12)
                                                 // Add an ID to force refresh when the forceRefresh UUID changes
                                                 .id("circle-\(category.id?.uuidString ?? UUID().uuidString)-\(forceRefresh)")

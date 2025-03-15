@@ -1,0 +1,85 @@
+{
+  "categories" : [
+    {
+      "subcategories" : [
+        {
+          "id" : "422A443A-2A33-40A7-A4E3-4AD0DE71818B",
+          "notes" : [
+            {
+              "id" : "31223832-3E35-49BD-9C42-51223BBD9228",
+              "createdAt" : "2025-03-14T19:53:05Z",
+              "content" : "This is a test",
+              "updatedAt" : "2025-03-14T19:53:05Z",
+              "title" : "test note for subcategory test 1"
+            }
+          ],
+          "createdAt" : "2025-03-14T19:43:33Z",
+          "name" : "test subcategory",
+          "colorHex" : "#007AFF",
+          "updatedAt" : "2025-03-14T19:43:33Z"
+        },
+        {
+          "id" : "60A74CD6-476E-4CA7-AAE6-E21B8198A780",
+          "name" : "subcategory 2",
+          "colorHex" : "00FF00",
+          "createdAt" : "2025-03-14T20:02:24Z",
+          "updatedAt" : "2025-03-14T20:02:24Z",
+          "notes" : [
+            {
+              "id" : "2297A401-36FD-4EB0-9A0F-FD867E7415BD",
+              "createdAt" : "2025-03-14T20:20:59Z",
+              "updatedAt" : "2025-03-14T21:28:05Z",
+              "content" : "This is a note",
+              "title" : "note for sub 2"
+            }
+          ]
+        }
+      ],
+      "notes" : [
+        {
+          "content" : "This is a test",
+          "createdAt" : "2025-03-14T04:49:56Z",
+          "title" : "test note a",
+          "updatedAt" : "2025-03-14T04:49:56Z",
+          "id" : "245CAD0B-64AF-4C42-A122-1B2DFD857F93"
+        },
+        {
+          "id" : "31223832-3E35-49BD-9C42-51223BBD9228",
+          "content" : "This is a test",
+          "updatedAt" : "2025-03-14T19:53:05Z",
+          "title" : "test note for subcategory test 1",
+          "createdAt" : "2025-03-14T19:53:05Z"
+        },
+        {
+          "content" : "This is a note",
+          "title" : "note for sub 2",
+          "id" : "2297A401-36FD-4EB0-9A0F-FD867E7415BD",
+          "createdAt" : "2025-03-14T20:20:59Z",
+          "updatedAt" : "2025-03-14T21:28:05Z"
+        }
+      ],
+      "colorHex" : "#007AFF",
+      "id" : "D9B2A828-212A-45E9-8EAE-7BCAC37A2913",
+      "name" : "test cat 1",
+      "createdAt" : "2025-03-14T04:49:36Z",
+      "updatedAt" : "2025-03-14T04:49:36Z"
+    },
+    {
+      "colorHex" : "FF0000",
+      "createdAt" : "2025-03-14T20:02:03Z",
+      "notes" : [
+
+      ],
+      "id" : "C8A86EF6-0DFF-4353-B3B9-45E2FF8AC54D",
+      "name" : "test cat 2",
+      "updatedAt" : "2025-03-14T23:42:02Z",
+      "subcategories" : [
+
+      ]
+    }
+  ],
+  "unlistedNotes" : [
+
+  ],
+  "exportDate" : "2025-03-14T23:57:17Z"
+}

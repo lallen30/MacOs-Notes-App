@@ -22,7 +22,7 @@ struct CreateCategoryView: View {
                     TextField("Name", text: $name)
                         .padding(.vertical, 4)
                     
-                    ColorPicker("Color", selection: $selectedColor)
+                    Text("Color")
                         .padding(.vertical, 4)
                     
                     // Color presets
