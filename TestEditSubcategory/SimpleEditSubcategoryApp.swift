@@ -198,7 +198,7 @@ class PersistenceController {
     let container: NSPersistentContainer
     
     init() {
-        container = NSPersistentContainer(name: "NotesApp")
+        container = NSPersistentContainer(name: "NotesLA")
         
         container.loadPersistentStores { (storeDescription, error) in
             if let error = error as NSError? {

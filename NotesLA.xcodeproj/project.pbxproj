@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8A1234561234567800000001 /* NotesAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000002 /* NotesAppApp.swift */; };
+		8A1234561234567800000001 /* NotesLAApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000002 /* NotesLAApp.swift */; };
 		8A1234561234567800000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000004 /* ContentView.swift */; };
 		8A1234561234567800000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000006 /* Assets.xcassets */; };
 		8A1234561234567800000007 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000008 /* Preview Assets.xcassets */; };
 		8A1234561234567800000009 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000010 /* Persistence.swift */; };
-		8A1234561234567800000011 /* NotesApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000012 /* NotesApp.xcdatamodeld */; };
+		8A1234561234567800000011 /* NotesLA.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000012 /* NotesLA.xcdatamodeld */; };
 		8A1234561234567800000014 /* Note+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000015 /* Note+Extension.swift */; };
 		8A1234561234567800000016 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000017 /* NoteListView.swift */; };
 		8A1234561234567800000018 /* NoteDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1234561234567800000019 /* NoteDetailView.swift */; };
@@ -21,17 +21,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8A1234561234567800000002 /* NotesAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesAppApp.swift; sourceTree = "<group>"; };
+		8A1234561234567800000002 /* NotesLAApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesLAApp.swift; sourceTree = "<group>"; };
 		8A1234561234567800000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8A1234561234567800000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A1234561234567800000008 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8A1234561234567800000010 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		8A1234561234567800000013 /* NotesApp.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = NotesApp.xcdatamodel; sourceTree = "<group>"; };
+		8A1234561234567800000013 /* NotesLA.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = NotesLA.xcdatamodel; sourceTree = "<group>"; };
 		8A1234561234567800000015 /* Note+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Note+Extension.swift"; sourceTree = "<group>"; };
 		8A1234561234567800000017 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
 		8A1234561234567800000019 /* NoteDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteDetailView.swift; sourceTree = "<group>"; };
-		8A1234561234567800000020 /* NotesApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NotesApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8A1234561234567800000021 /* NotesApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotesApp.entitlements; sourceTree = "<group>"; };
+		8A1234561234567800000020 /* NotesLA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NotesLA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A1234561234567800000021 /* NotesLA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotesLA.entitlements; sourceTree = "<group>"; };
 		8A1234561234567800000022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8A1234561234567800000041 /* CreateNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNoteView.swift; sourceTree = "<group>"; };
 		8A1234561234567800000043 /* EditNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditNoteView.swift; sourceTree = "<group>"; };
@@ -56,27 +56,27 @@
 			);
 			sourceTree = "<group>";
 		};
-		8A1234561234567800000025 /* NotesApp */ = {
+		8A1234561234567800000025 /* NotesLA */ = {
 			isa = PBXGroup;
 			children = (
-				8A1234561234567800000002 /* NotesAppApp.swift */,
+				8A1234561234567800000002 /* NotesLAApp.swift */,
 				8A1234561234567800000004 /* ContentView.swift */,
 				8A1234561234567800000027 /* Views */,
 				8A1234561234567800000028 /* Models */,
 				8A1234561234567800000010 /* Persistence.swift */,
 				8A1234561234567800000006 /* Assets.xcassets */,
-				8A1234561234567800000021 /* NotesApp.entitlements */,
+				8A1234561234567800000021 /* NotesLA.entitlements */,
 				8A1234561234567800000022 /* Info.plist */,
-				8A1234561234567800000012 /* NotesApp.xcdatamodeld */,
+				8A1234561234567800000012 /* NotesLA.xcdatamodeld */,
 				8A1234561234567800000029 /* Preview Content */,
 			);
-			path = NotesApp;
+			path = NotesLA;
 			sourceTree = "<group>";
 		};
 		8A1234561234567800000026 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8A1234561234567800000020 /* NotesApp.app */,
+				8A1234561234567800000020 /* NotesLA.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -111,9 +111,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8A1234561234567800000030 /* NotesApp */ = {
+		8A1234561234567800000030 /* NotesLA */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8A1234561234567800000031 /* Build configuration list for PBXNativeTarget "NotesApp" */;
+			buildConfigurationList = 8A1234561234567800000031 /* Build configuration list for PBXNativeTarget "NotesLA" */;
 			buildPhases = (
 				8A1234561234567800000032 /* Sources */,
 				8A1234561234567800000023 /* Frameworks */,
@@ -123,9 +123,9 @@
 			);
 			dependencies = (
 			);
-			name = NotesApp;
-			productName = NotesApp;
-			productReference = 8A1234561234567800000020 /* NotesApp.app */;
+			name = NotesLA;
+			productName = NotesLA;
+			productReference = 8A1234561234567800000020 /* NotesLA.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -143,7 +143,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8A1234561234567800000035 /* Build configuration list for PBXProject "NotesApp" */;
+			buildConfigurationList = 8A1234561234567800000035 /* Build configuration list for PBXProject "NotesLA" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -156,7 +156,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8A1234561234567800000030 /* NotesApp */,
+				8A1234561234567800000030 /* NotesLA */,
 			);
 		};
 /* End PBXProject section */
@@ -182,9 +182,9 @@
 				8A1234561234567800000016 /* NoteListView.swift in Sources */,
 				8A1234561234567800000018 /* NoteDetailView.swift in Sources */,
 				8A1234561234567800000003 /* ContentView.swift in Sources */,
-				8A1234561234567800000011 /* NotesApp.xcdatamodeld in Sources */,
+				8A1234561234567800000011 /* NotesLA.xcdatamodeld in Sources */,
 				8A1234561234567800000014 /* Note+Extension.swift in Sources */,
-				8A1234561234567800000001 /* NotesAppApp.swift in Sources */,
+				8A1234561234567800000001 /* NotesLAApp.swift in Sources */,
 				8A1234561234567800000040 /* CreateNoteView.swift in Sources */,
 				8A1234561234567800000042 /* EditNoteView.swift in Sources */,
 			);
@@ -311,17 +311,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = NotesApp/NotesApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = NotesLA/NotesLA.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"NotesApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"NotesLA/Preview Content\"";
 				DEVELOPMENT_TEAM = CS8MH5S8BL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NotesApp/Info.plist;
+				INFOPLIST_FILE = NotesLA/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "LA Notes";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -342,17 +342,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = NotesApp/NotesApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = NotesLA/NotesLA.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"NotesApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"NotesLA/Preview Content\"";
 				DEVELOPMENT_TEAM = CS8MH5S8BL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NotesApp/Info.plist;
+				INFOPLIST_FILE = NotesLA/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "LA Notes";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -371,7 +371,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8A1234561234567800000031 /* Build configuration list for PBXNativeTarget "NotesApp" */ = {
+		8A1234561234567800000031 /* Build configuration list for PBXNativeTarget "NotesLA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8A1234561234567800000038 /* Debug */,
@@ -380,7 +380,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8A1234561234567800000035 /* Build configuration list for PBXProject "NotesApp" */ = {
+		8A1234561234567800000035 /* Build configuration list for PBXProject "NotesLA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8A1234561234567800000036 /* Debug */,
@@ -392,13 +392,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		8A1234561234567800000012 /* NotesApp.xcdatamodeld */ = {
+		8A1234561234567800000012 /* NotesLA.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				8A1234561234567800000013 /* NotesApp.xcdatamodel */,
+				8A1234561234567800000013 /* NotesLA.xcdatamodel */,
 			);
-			currentVersion = 8A1234561234567800000013 /* NotesApp.xcdatamodel */;
-			path = NotesApp.xcdatamodeld;
+			currentVersion = 8A1234561234567800000013 /* NotesLA.xcdatamodel */;
+			path = NotesLA.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

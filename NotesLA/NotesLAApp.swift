@@ -7,7 +7,7 @@ import SwiftUI
 // MARK: - Main App
 
 @main
-struct NotesAppApp: App {
+struct NotesLAApp: App {
     let persistenceController = PersistenceController.shared
     @State private var isExporting = false
     @State private var isImporting = false
@@ -188,7 +188,7 @@ struct NotesAppApp: App {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
             let dateString = dateFormatter.string(from: Date())
-            let fileName = "NotesExport_\(dateString).json"
+            let fileName = "NotesLAExport_\(dateString).json"
             let fileURL = temporaryDirectory.appendingPathComponent(fileName)
             
             // Write to file

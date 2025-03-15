@@ -215,10 +215,15 @@ struct ContentView: View {
                                             // Display notes directly - Completely revised implementation
                                             VStack(alignment: .leading, spacing: 0) {
                                                 if directNotes.isEmpty {
-                                                    Text("No notes in this category")
-                                                        .font(.caption)
-                                                        .foregroundColor(.secondary)
-                                                        .padding(.vertical, 0)
+                                        HStack {
+                                            Spacer().frame(width: 20) // Added left spacing
+                                            Text("No notes in this category")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                                    .padding(.vertical, 0)
+                                            Spacer()
+                                        }
+                                                    
                                                 } else {
                                                     
                                                     ForEach(directNotes, id: \.id) { note in
@@ -245,7 +250,9 @@ struct ContentView: View {
                                                                 }
                                                                 Spacer()
                                                             }
-                                                            .padding(.vertical, 1) // Reduced padding
+                                                            
+                                                            .padding(.vertical, 4) // Increased vertical padding
+                                                            .padding(.horizontal, 2) // Add horizontal padding
                                                             .frame(maxWidth: .infinity, alignment: .leading)
                                                             .background(selectedNote?.id == note.id ? Color.accentColor.opacity(0.2) : Color(NSColor.windowBackgroundColor))
                                                             .cornerRadius(4)
@@ -255,7 +262,10 @@ struct ContentView: View {
                                                             )
                                                         }
                                                         .buttonStyle(PlainButtonStyle())
+                                                        Spacer().frame(width: 4)
                                                         }
+                                                        // Add 2 pixel space below each note
+                                                        Spacer().frame(height: 4)
                                                     }
                                                 }
                                             }
@@ -370,6 +380,7 @@ struct ContentView: View {
                                                         } else {
                                                             
                                                             ForEach(subcategoryNotes, id: \.id) { note in
+                                                        HStack {
                                                                 Button(action: {
                                                                     selectedNote = note
                                                                     print("Selected note: \(note.title ?? "Untitled")")
@@ -408,6 +419,11 @@ struct ContentView: View {
                                                                     }
                                                                 }
                                                                 .buttonStyle(PlainButtonStyle())
+                                                                // Add 2 pixel space below each note
+                                                                Spacer().frame(width: 4)
+                                                            }
+                                                        // Add 2 pixel space below each note
+                                                        Spacer().frame(height: 4)
                                                             }
                                                         }
                                                     }
